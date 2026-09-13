@@ -1,0 +1,57 @@
+{
+  "kind": "github_issues_to_list",
+  "title": "GitHub Issues to List",
+  "ports": {
+    "inputs": [
+      {
+        "id": 1,
+        "name": "issues",
+        "title": "Issues",
+        "accepts": [
+          "application/json",
+          "message/*"
+        ],
+        "multiplicity": "many",
+        "required": false,
+        "execution_requirement": "required_for_execution"
+      }
+    ],
+    "outputs": [
+      {
+        "id": 1,
+        "name": "liste",
+        "title": "Liste",
+        "emits": [
+          "application/json",
+          "message/*"
+        ],
+        "multiplicity": "many"
+      },
+      {
+        "id": 2,
+        "name": "summary",
+        "title": "Summary",
+        "emits": [
+          "text/plain",
+          "message/*"
+        ],
+        "multiplicity": "many"
+      }
+    ]
+  },
+  "config": {
+    "include_body": true,
+    "max_body_chars": 6000,
+    "include_closed": true,
+    "empty_body_placeholder": "",
+    "required_labels": [],
+    "excluded_labels": []
+  },
+  "runtime": {
+    "initial_state": "waiting",
+    "runtime_executable": true,
+    "active_worker": true,
+    "centralized_executor": "generic",
+    "centralized_dependency_mode": "all_inputs"
+  }
+}

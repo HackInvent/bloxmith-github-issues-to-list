@@ -1,0 +1,180 @@
+.cw-github-issues-to-list-modal {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(1120px, calc(100vw - 32px));
+}
+
+.cw-github-issues-to-list-modal .modal-header,
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-footer {
+  padding-inline: 24px;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-body {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  min-height: min(74vh, 720px);
+  overflow: hidden;
+  background: #f7f9fd;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-tablist {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 18px 14px;
+  border-right: 1px solid var(--line);
+  background: #ffffff;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-tab {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  min-height: 58px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--muted);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-tab span,
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-tab small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-tab span {
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-tab small {
+  font-size: 0.76rem;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-tab[aria-selected="true"] {
+  border-color: rgba(106, 90, 249, 0.5);
+  background: #f5f3ff;
+  color: var(--accent-strong);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-tab:focus-visible {
+  outline: none;
+  border-color: rgba(106, 90, 249, 0.75);
+  box-shadow: 0 0 0 4px rgba(106, 90, 249, 0.12);
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-panels,
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-panel {
+  min-width: 0;
+  min-height: 0;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-panels {
+  overflow: hidden;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-panel {
+  height: 100%;
+  overflow: auto;
+  padding: 22px 24px;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-panel[hidden] {
+  display: none;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+  gap: 18px;
+  align-items: start;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-section {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-section .field-group {
+  min-width: 0;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-help {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-preview {
+  max-height: 460px;
+  overflow: auto;
+  margin: 12px 0 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #101828;
+  color: #e6edf7;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-status-section {
+  margin-top: 18px;
+}
+
+.cw-github-issues-to-list-modal .github-issues-to-list-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 14px;
+  border-top: 1px solid var(--line);
+  background: #ffffff;
+}
+
+@media (max-width: 900px) {
+  .cw-github-issues-to-list-modal {
+    width: min(100%, calc(100vw - 24px));
+  }
+
+  .cw-github-issues-to-list-modal .github-issues-to-list-modal-body {
+    grid-template-columns: 1fr;
+  }
+
+  .cw-github-issues-to-list-modal .github-issues-to-list-modal-tablist {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(160px, 1fr);
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cw-github-issues-to-list-modal .github-issues-to-list-modal-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .cw-github-issues-to-list-modal .github-issues-to-list-modal-panel {
+    padding: 16px;
+  }
+
+  .cw-github-issues-to-list-modal .github-issues-to-list-modal-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
