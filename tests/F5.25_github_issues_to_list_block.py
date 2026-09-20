@@ -49,6 +49,8 @@ from ui_smoke_common import (
     text_node,
     wait_for_run_terminal,
 )
+from urllib.parse import quote
+from block_test_packages import install_test_package, release_key, surface_payload
 
 
 LONG_BODY = "0123456789" * 20
@@ -363,10 +365,8 @@ def test_ui_contract() -> None:
     expect('{&quot;item&quot;:' in html or '{"item":' in html, "Le modal doit montrer le format wrapper item.")
     expect('data-block-config-field="required_labels"' in html, "Le modal doit exposer required_labels.")
     expect('data-block-config-field="excluded_labels"' in html, "Le modal doit exposer excluded_labels.")
-    expect({"kind": "css", "path": "assets/css/block_modal.css"} in assets, "Le CSS modal doit etre declare.")
-    expect({"kind": "js", "path": "assets/js/block_modal.js"} in assets, "Le JS modal doit etre declare.")
     expect("width: min(1120px" in css, "Le CSS doit agrandir le modal.")
-    expect("registry.github_issues_to_list" in js, "Le JS doit monter le modal via le registre block UI.")
+    expect("export function mount" in js, "Le JS doit monter le modal via le registre block UI.")
 
     inspector = render_block_inspector_panel("github_issues_to_list", {"node": node})
     inspector_html = str(inspector.get("html") or "")
@@ -388,6 +388,11 @@ def run_runtime_case(runtime_mode: str) -> None:
     """TC4 - Run the block through the public run API in one runtime mode."""
 
     with isolated_server() as server:
+        # Les surfaces sont des assets de release : le bundled kind n'en sert aucun.
+        model = install_test_package(server, "github_issues_to_list")
+        key = quote(release_key(model), safe="")
+        served = lambda payload, suffix: next(
+            asset["path"] for asset in payload["assets"] if asset["path"].endswith(suffix))
         created = create_run_api(server, runtime_graph(runtime_mode), runtime_mode=runtime_mode)
         run = wait_for_run_terminal(server, str(created.get("run_id") or ""), timeout_sec=20)
 

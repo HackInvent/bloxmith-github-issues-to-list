@@ -49,20 +49,6 @@ class GitHubIssuesToListBlock(BlockDefinition):
 
     kind = "github_issues_to_list"
 
-    def ui_assets(self, surface: str = "modal") -> list[dict[str, str]]:
-        """Return block-owned frontend assets for the requested UI surface.
-
-        Args:
-            surface: UI surface requesting assets.
-        """
-
-        if surface == "modal":
-            return [
-                {"kind": "css", "path": "assets/css/block_modal.css"},
-                {"kind": "js", "path": "assets/js/block_modal.js"},
-            ]
-        return []
-
     def render_node_card(self, *, node: dict[str, Any], payload: dict[str, Any] | None = None) -> dict[str, Any]:
         """Render the compact GitHub Issues transformer canvas card."""
 
