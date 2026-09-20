@@ -191,7 +191,7 @@ def parse_list_output(result) -> list[dict[str, Any]]:
 
     raw_output = result.outputs[0].value
     parsed = json.loads(raw_output)
-    expect(isinstance(parsed, list), "La sortie liste doit etre un tableau JSON.")
+    expect(isinstance(parsed, list), "The list output must be a JSON array.")
     return parsed
 
 
@@ -209,7 +209,7 @@ def test_compaction_and_iterator_compatibility() -> None:
     wrappers = parse_list_output(result)
     expect(len(wrappers) == 2, "Both issues must be kept by default.")
     first = wrappers[0].get("item") or {}
-    expect(first.get("number") == 1, "Le numero issue doit etre conserve.")
+    expect(first.get("number") == 1, "The issue number must be kept.")
     expect(first.get("title") == "Add GitHub issues block", "The issue title must be kept.")
     expect(first.get("labels") == ["enhancement"], "Labels must be compacted to names.")
     expect(first.get("milestone") == "1.0.7", "The milestone must be compacted to its title.")
@@ -219,11 +219,11 @@ def test_compaction_and_iterator_compatibility() -> None:
     expect(first.get("comments_data", [])[0].get("body") == "Premier commentaire", "Comment content must be preserved.")
     expect("extra" not in first.get("comments_data", [])[0], "Noisy comment fields must not be copied.")
     expect(first.get("body_truncated") is True, "The body must report the truncation.")
-    expect(len(first.get("body") or "") == 25, "Le body doit etre tronque au seuil configure.")
-    expect("reactions" not in first and "repository_url" not in first, "Les champs GitHub bruyants ne doivent pas etre copies.")
+    expect(len(first.get("body") or "") == 25, "The body must be truncated at the configured threshold.")
+    expect("reactions" not in first and "repository_url" not in first, "The noisy GitHub fields must not be copied.")
 
     iterator_items = IteratorBlock().parse_items(result.outputs[0].value)
-    expect(isinstance(iterator_items[0], dict) and "item" in iterator_items[0], "Iterator doit lire la liste wrapper produite.")
+    expect(isinstance(iterator_items[0], dict) and "item" in iterator_items[0], "The Iterator must read the produced wrapper list.")
 
 
 def test_closed_filter_and_payload_shapes() -> None:
@@ -237,12 +237,12 @@ def test_closed_filter_and_payload_shapes() -> None:
         )
     )
     wrappers = parse_list_output(filtered)
-    expect(len(wrappers) == 1, "Les issues fermees doivent etre ignorees quand include_closed=false.")
+    expect(len(wrappers) == 1, "Closed issues must be ignored when include_closed=false.")
     first = wrappers[0].get("item") or {}
-    expect("body" not in first, "Le body ne doit pas etre present quand include_body=false.")
-    expect("2 issue(s) recue(s)" in filtered.outputs[1].value, "Le summary doit indiquer le nombre recu.")
-    expect("1 issue(s) conservee(s)" in filtered.outputs[1].value, "Le summary doit indiquer le nombre conserve.")
-    expect("1 fermee(s) ignoree(s)" in filtered.outputs[1].value, "Le summary doit indiquer les issues fermees ignorees.")
+    expect("body" not in first, "The body must not be present when include_body=false.")
+    expect("2 issue(s) received" in filtered.outputs[1].value, "The summary must report the received count.")
+    expect("1 issue(s) kept" in filtered.outputs[1].value, "The summary must report the kept count.")
+    expect("1 closed issue(s) ignored" in filtered.outputs[1].value, "The summary must report the ignored closed issues.")
 
     direct_list = block.execute_runtime(
         unit_context(
@@ -251,7 +251,7 @@ def test_closed_filter_and_payload_shapes() -> None:
         )
     )
     direct_wrappers = parse_list_output(direct_list)
-    expect(len(direct_wrappers) == 2, "Un tableau direct d'issues doit etre accepte.")
+    expect(len(direct_wrappers) == 2, "A direct array of issues must be accepted.")
 
     invalid = block.execute_runtime(unit_context(config={}, input_payload="not json"))
     expect(invalid.status == "failed", "A non-JSON input must fail cleanly.")
@@ -294,11 +294,11 @@ def test_label_filters() -> None:
 
     unfiltered = block.execute_runtime(unit_context(config={}, input_payload=payload))
     expect(issue_numbers(unfiltered) == [1, 2, 3, 4], "With no filter, every issue must be kept.")
-    expect("4 issue(s) recue(s)" in unfiltered.outputs[1].value, "The summary must count the received issues.")
-    expect("4 issue(s) conservee(s)" in unfiltered.outputs[1].value, "The summary must count the issues kept with no filter.")
+    expect("4 issue(s) received" in unfiltered.outputs[1].value, "The summary must count the received issues.")
+    expect("4 issue(s) kept" in unfiltered.outputs[1].value, "The summary must count the issues kept with no filter.")
 
     required = block.execute_runtime(unit_context(config={"required_labels": ["todo"]}, input_payload=payload))
-    expect(issue_numbers(required) == [1, 2, 4], "required_labels doit garder les issues avec le label requis, sans tenir compte de la casse.")
+    expect(issue_numbers(required) == [1, 2, 4], "required_labels must keep the issues carrying the required label, ignoring case.")
     expect("1 excluded for a missing required label" in required.outputs[1].value, "The summary must count the missing required labels.")
 
     excluded = block.execute_runtime(unit_context(config={"excluded_labels": ["status:done"]}, input_payload=payload))
@@ -356,17 +356,17 @@ def test_ui_contract() -> None:
     assets = rendered.get("assets") or []
     css = (ROOT / "blocs/github_issues_to_list/assets/css/block_modal.css").read_text(encoding="utf-8")
     js = (ROOT / "blocs/github_issues_to_list/assets/js/block_modal.js").read_text(encoding="utf-8")
-    expect('data-node-kind="github_issues_to_list"' in html, "Le modal doit venir du bloc.")
-    expect("cw-github-issues-to-list-modal" in html, "Le modal doit utiliser le layout large du bloc.")
-    expect('data-block-runtime-refresh="autonomous"' in html, "Le modal doit gerer son refresh runtime.")
+    expect('data-node-kind="github_issues_to_list"' in html, "The modal must come from the block.")
+    expect("cw-github-issues-to-list-modal" in html, "The modal must use the block's wide layout.")
+    expect('data-block-runtime-refresh="autonomous"' in html, "The modal must own its runtime refresh.")
     expect('data-github-issues-to-list-tab-id="transform"' in html, "The modal must expose the Transformation tab.")
     expect('data-github-issues-to-list-tab-id="preview"' in html, "The modal must expose the Preview tab.")
     expect('data-github-issues-to-list-tab-id="status"' in html, "The modal must expose the Ports & etat tab.")
-    expect('{&quot;item&quot;:' in html or '{"item":' in html, "Le modal doit montrer le format wrapper item.")
-    expect('data-block-config-field="required_labels"' in html, "Le modal doit exposer required_labels.")
-    expect('data-block-config-field="excluded_labels"' in html, "Le modal doit exposer excluded_labels.")
-    expect("width: min(1120px" in css, "Le CSS doit agrandir le modal.")
-    expect("export function mount" in js, "Le JS doit monter le modal via le registre block UI.")
+    expect('{&quot;item&quot;:' in html or '{"item":' in html, "The modal must show the item wrapper format.")
+    expect('data-block-config-field="required_labels"' in html, "The modal must expose required_labels.")
+    expect('data-block-config-field="excluded_labels"' in html, "The modal must expose excluded_labels.")
+    expect("width: min(1120px" in css, "The CSS must enlarge the modal.")
+    expect("export function mount" in js, "The JS must mount the modal through the block UI registry.")
 
     inspector = render_block_inspector_panel("github_issues_to_list", {"node": node})
     inspector_html = str(inspector.get("html") or "")
@@ -381,7 +381,7 @@ def test_ui_contract() -> None:
 
     card = render_block_node_card("github_issues_to_list", {"node": node})
     card_html = str(card.get("html") or "")
-    expect("Issues -&gt; liste item" in card_html, "La node-card doit resumer la transformation.")
+    expect("Issues -&gt; liste item" in card_html, "The node card must summarize the transformation.")
 
 
 def run_runtime_case(runtime_mode: str) -> None:

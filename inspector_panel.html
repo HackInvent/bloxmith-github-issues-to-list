@@ -32,7 +32,7 @@
 
     <label class="checkbox-line">
       <input data-block-config-field="include_closed" data-block-value-type="boolean" type="checkbox" {{ include_closed_checked }} />
-      <span>Conserver les issues fermees</span>
+      <span>Keep the closed issues</span>
     </label>
 
     <div class="field-group">
@@ -41,12 +41,12 @@
     </div>
 
     <div class="field-group">
-      <label>Labels obligatoires</label>
+      <label>Required labels</label>
       <textarea data-block-config-field="required_labels" data-block-value-type="json" rows="4" spellcheck="false" placeholder="[&quot;todo&quot;]">{{ required_labels }}</textarea>
     </div>
 
     <div class="field-group">
-      <label>Labels interdits</label>
+      <label>Forbidden labels</label>
       <textarea data-block-config-field="excluded_labels" data-block-value-type="json" rows="4" spellcheck="false" placeholder="[&quot;status:done&quot;]">{{ excluded_labels }}</textarea>
     </div>
 

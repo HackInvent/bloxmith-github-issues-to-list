@@ -152,16 +152,16 @@ class GitHubIssuesToListBlock(BlockDefinition):
         logs = [
             (
                 f"[github-issues-to-list] {context.node_id}: "
-                f"{metadata['received_count']} issue(s) recues, "
-                f"{metadata['published_count']} issue(s) conservees, "
+                f"{metadata['received_count']} issue(s) received, "
+                f"{metadata['published_count']} issue(s) kept, "
                 f"{metadata['skipped_missing_required_label_count']} excluded for a missing required label, "
                 f"{metadata['skipped_excluded_label_count']} excluded by an excluded label."
             )
         ]
         if metadata["skipped_closed_count"]:
-            logs.append(f"[github-issues-to-list] {context.node_id}: {metadata['skipped_closed_count']} issue(s) fermee(s) ignoree(s).")
+            logs.append(f"[github-issues-to-list] {context.node_id}: {metadata['skipped_closed_count']} issue(s) closed issue(s) ignored.")
         if metadata["truncated_body_count"]:
-            logs.append(f"[github-issues-to-list] {context.node_id}: {metadata['truncated_body_count']} body(s) tronque(s).")
+            logs.append(f"[github-issues-to-list] {context.node_id}: {metadata['truncated_body_count']} body(s) truncated.")
         return BlockRuntimeResult(
             status="success",
             outputs=outputs,
@@ -294,15 +294,15 @@ class GitHubIssuesToListBlock(BlockDefinition):
         """
 
         parts = [
-            f"{metadata['received_count']} issue(s) recue(s)",
-            f"{metadata['published_count']} issue(s) conservee(s)",
+            f"{metadata['received_count']} issue(s) received",
+            f"{metadata['published_count']} issue(s) kept",
             f"{metadata.get('skipped_missing_required_label_count', 0)} excluded for a missing required label",
             f"{metadata.get('skipped_excluded_label_count', 0)} excluded by an excluded label",
         ]
         if metadata.get("skipped_closed_count"):
-            parts.append(f"{metadata['skipped_closed_count']} fermee(s) ignoree(s)")
+            parts.append(f"{metadata['skipped_closed_count']} closed issue(s) ignored")
         if metadata.get("truncated_body_count"):
-            parts.append(f"{metadata['truncated_body_count']} body(s) tronque(s)")
+            parts.append(f"{metadata['truncated_body_count']} body(s) truncated")
         return ", ".join(parts)
 
     def _render_modal_body(
@@ -317,9 +317,9 @@ class GitHubIssuesToListBlock(BlockDefinition):
 
         node_dom_id = self._modal_dom_id(node)
         tabs = [
-            self._render_modal_tab(node_dom_id=node_dom_id, tab_id="transform", label="Transformation", summary="Champs et filtres", selected=True),
-            self._render_modal_tab(node_dom_id=node_dom_id, tab_id="preview", label="Preview", summary="Format de sortie", selected=False),
-            self._render_modal_tab(node_dom_id=node_dom_id, tab_id="status", label="Ports & etat", summary="Runtime", selected=False),
+            self._render_modal_tab(node_dom_id=node_dom_id, tab_id="transform", label="Transformation", summary="Fields and filters", selected=True),
+            self._render_modal_tab(node_dom_id=node_dom_id, tab_id="preview", label="Preview", summary="Output format", selected=False),
+            self._render_modal_tab(node_dom_id=node_dom_id, tab_id="status", label="Ports and state", summary="Runtime", selected=False),
         ]
         panels = [
             self._render_transform_panel(node_dom_id=node_dom_id, title=title, config=config, selected=True),
@@ -379,22 +379,22 @@ class GitHubIssuesToListBlock(BlockDefinition):
             '</div>'
             '<label class="checkbox-line">'
             f'<input data-block-config-field="include_closed" data-block-value-type="boolean" type="checkbox" {include_closed} />'
-            '<span>Conserver les issues fermees recues</span>'
+            '<span>Keep the closed issues received</span>'
             '</label>'
             '<div class="field-group">'
-            '<label>Placeholder body vide</label>'
+            '<label>Empty body placeholder</label>'
             f'<input data-block-config-field="empty_body_placeholder" type="text" autocomplete="off" spellcheck="false" placeholder="Optionnel" value="{escape(config["empty_body_placeholder"], quote=True)}" />'
             '</div>'
             '<div class="field-group">'
-            '<label>Labels obligatoires</label>'
+            '<label>Required labels</label>'
             f'<textarea data-block-config-field="required_labels" data-block-value-type="json" rows="4" spellcheck="false" placeholder="[&quot;todo&quot;]">{escape(self._labels_config_text(config["required_labels"]))}</textarea>'
             '</div>'
             '<div class="field-group">'
-            '<label>Labels interdits</label>'
+            '<label>Forbidden labels</label>'
             f'<textarea data-block-config-field="excluded_labels" data-block-value-type="json" rows="4" spellcheck="false" placeholder="[&quot;status:done&quot;]">{escape(self._labels_config_text(config["excluded_labels"]))}</textarea>'
             '</div>'
-            '<p class="github-issues-to-list-modal-help">Labels are compared in lowercase. The * character is accepted, for example closed:*. Excluded labels win sur les labels obligatoires.</p>'
-            '<p class="github-issues-to-list-modal-help">Le bloc ne contacte pas GitHub. Il transforme uniquement une reponse deja recue ou un tableau JSON.</p>'
+            '<p class="github-issues-to-list-modal-help">Labels are compared in lowercase. The * character is accepted, for example closed:*. Excluded labels win over required labels.</p>'
+            '<p class="github-issues-to-list-modal-help">The block does not contact GitHub. It only transforms a response already received, or a JSON array.</p>'
             '</section>'
             '</div>'
             '</section>'
@@ -442,7 +442,7 @@ class GitHubIssuesToListBlock(BlockDefinition):
         panel_id = f"github-issues-to-list-{node_dom_id}-panel-status"
         tab_id = f"github-issues-to-list-{node_dom_id}-tab-status"
         runtime = payload.get("runtime") if isinstance(payload.get("runtime"), dict) else {}
-        status = str(runtime.get("status") or "Aucun etat runtime disponible.")
+        status = str(runtime.get("status") or "No runtime state available.")
         last_message = str(runtime.get("last_message") or "")
         return (
             '<section class="github-issues-to-list-modal-panel" data-github-issues-to-list-modal-panel '
