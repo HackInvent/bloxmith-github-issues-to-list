@@ -154,8 +154,8 @@ class GitHubIssuesToListBlock(BlockDefinition):
                 f"[github-issues-to-list] {context.node_id}: "
                 f"{metadata['received_count']} issue(s) recues, "
                 f"{metadata['published_count']} issue(s) conservees, "
-                f"{metadata['skipped_missing_required_label_count']} exclue(s) par absence de label requis, "
-                f"{metadata['skipped_excluded_label_count']} exclue(s) par label interdit."
+                f"{metadata['skipped_missing_required_label_count']} excluded for a missing required label, "
+                f"{metadata['skipped_excluded_label_count']} excluded by an excluded label."
             )
         ]
         if metadata["skipped_closed_count"]:
@@ -296,8 +296,8 @@ class GitHubIssuesToListBlock(BlockDefinition):
         parts = [
             f"{metadata['received_count']} issue(s) recue(s)",
             f"{metadata['published_count']} issue(s) conservee(s)",
-            f"{metadata.get('skipped_missing_required_label_count', 0)} exclue(s) par absence de label requis",
-            f"{metadata.get('skipped_excluded_label_count', 0)} exclue(s) par label interdit",
+            f"{metadata.get('skipped_missing_required_label_count', 0)} excluded for a missing required label",
+            f"{metadata.get('skipped_excluded_label_count', 0)} excluded by an excluded label",
         ]
         if metadata.get("skipped_closed_count"):
             parts.append(f"{metadata['skipped_closed_count']} fermee(s) ignoree(s)")
@@ -371,7 +371,7 @@ class GitHubIssuesToListBlock(BlockDefinition):
             '<div class="ports-editor-header"><span class="group-label">Options de transformation</span></div>'
             '<label class="checkbox-line">'
             f'<input data-block-config-field="include_body" data-block-value-type="boolean" type="checkbox" {include_body} />'
-            '<span>Inclure le body dans chaque item</span>'
+            '<span>Include the body in every item</span>'
             '</label>'
             '<div class="field-group">'
             '<label>Taille max du body</label>'
@@ -393,7 +393,7 @@ class GitHubIssuesToListBlock(BlockDefinition):
             '<label>Labels interdits</label>'
             f'<textarea data-block-config-field="excluded_labels" data-block-value-type="json" rows="4" spellcheck="false" placeholder="[&quot;status:done&quot;]">{escape(self._labels_config_text(config["excluded_labels"]))}</textarea>'
             '</div>'
-            '<p class="github-issues-to-list-modal-help">Les labels sont compares en minuscules. Le caractere * est accepte, par exemple closed:*. Les labels interdits sont prioritaires sur les labels obligatoires.</p>'
+            '<p class="github-issues-to-list-modal-help">Labels are compared in lowercase. The * character is accepted, for example closed:*. Excluded labels win sur les labels obligatoires.</p>'
             '<p class="github-issues-to-list-modal-help">Le bloc ne contacte pas GitHub. Il transforme uniquement une reponse deja recue ou un tableau JSON.</p>'
             '</section>'
             '</div>'
@@ -429,8 +429,8 @@ class GitHubIssuesToListBlock(BlockDefinition):
             f'data-github-issues-to-list-tab-id="preview" id="{escape(panel_id, quote=True)}" role="tabpanel" '
             f'aria-labelledby="{escape(tab_id, quote=True)}"{ "" if selected else " hidden" }>'
             '<section class="github-issues-to-list-modal-section">'
-            '<div class="ports-editor-header"><span class="group-label">Sortie liste JSON</span></div>'
-            '<p class="github-issues-to-list-modal-help">Chaque issue devient un wrapper <code>{"item": {...}}</code>. Iterator emettra ensuite un item par trigger.</p>'
+            '<div class="ports-editor-header"><span class="group-label">JSON list output</span></div>'
+            '<p class="github-issues-to-list-modal-help">Every issue becomes a wrapper <code>{"item": {...}}</code>. The Iterator then emits one item per trigger.</p>'
             f'<pre class="github-issues-to-list-preview"><code>{escape(sample)}</code></pre>'
             '</section>'
             '</section>'
@@ -450,11 +450,11 @@ class GitHubIssuesToListBlock(BlockDefinition):
             f'aria-labelledby="{escape(tab_id, quote=True)}"{ "" if selected else " hidden" }>'
             '<div class="github-issues-to-list-modal-layout">'
             '<section class="github-issues-to-list-modal-section">'
-            '<div class="ports-editor-header"><span class="group-label">Entrees</span></div>'
+            '<div class="ports-editor-header"><span class="group-label">Inputs</span></div>'
             f'{render_ports_rows(node, "input", payload=payload)}'
             '</section>'
             '<section class="github-issues-to-list-modal-section">'
-            '<div class="ports-editor-header"><span class="group-label">Sorties</span></div>'
+            '<div class="ports-editor-header"><span class="group-label">Outputs</span></div>'
             f'{render_ports_rows(node, "output", payload=payload)}'
             '</section>'
             '</div>'
@@ -471,7 +471,7 @@ class GitHubIssuesToListBlock(BlockDefinition):
 
         return (
             '<div class="field-group">'
-            '<label>Nom du bloc</label>'
+            '<label>Block name</label>'
             f'<input data-node-title-input data-block-title-field type="text" autocomplete="off" spellcheck="false" value="{escape(title, quote=True)}" />'
             '</div>'
         )

@@ -205,20 +205,20 @@ def test_compaction_and_iterator_compatibility() -> None:
             input_payload=sample_github_response(),
         )
     )
-    expect(result.status == "success", "La transformation doit reussir sur une reponse GitHub Issues brute.")
+    expect(result.status == "success", "The transformation must succeed on a raw GitHub Issues response.")
     wrappers = parse_list_output(result)
-    expect(len(wrappers) == 2, "Les deux issues doivent etre conservees par defaut.")
+    expect(len(wrappers) == 2, "Both issues must be kept by default.")
     first = wrappers[0].get("item") or {}
     expect(first.get("number") == 1, "Le numero issue doit etre conserve.")
-    expect(first.get("title") == "Add GitHub issues block", "Le titre issue doit etre conserve.")
-    expect(first.get("labels") == ["enhancement"], "Les labels doivent etre compactes en noms.")
-    expect(first.get("milestone") == "1.0.7", "Le milestone doit etre compacte en titre.")
-    expect(first.get("author") == "HackInvent", "L'auteur doit etre compacte en login.")
-    expect(first.get("assignees") == ["maintainer"], "Les assignees doivent etre compactes en logins.")
-    expect(first.get("comments_data", [])[0].get("author") == "reviewer", "Les commentaires enrichis doivent etre compactes.")
-    expect(first.get("comments_data", [])[0].get("body") == "Premier commentaire", "Le contenu des commentaires doit etre preserve.")
-    expect("extra" not in first.get("comments_data", [])[0], "Les champs bruyants des commentaires ne doivent pas etre copies.")
-    expect(first.get("body_truncated") is True, "Le body doit signaler la troncature.")
+    expect(first.get("title") == "Add GitHub issues block", "The issue title must be kept.")
+    expect(first.get("labels") == ["enhancement"], "Labels must be compacted to names.")
+    expect(first.get("milestone") == "1.0.7", "The milestone must be compacted to its title.")
+    expect(first.get("author") == "HackInvent", "The author must be compacted to a login.")
+    expect(first.get("assignees") == ["maintainer"], "Assignees must be compacted to logins.")
+    expect(first.get("comments_data", [])[0].get("author") == "reviewer", "Enriched comments must be compacted.")
+    expect(first.get("comments_data", [])[0].get("body") == "Premier commentaire", "Comment content must be preserved.")
+    expect("extra" not in first.get("comments_data", [])[0], "Noisy comment fields must not be copied.")
+    expect(first.get("body_truncated") is True, "The body must report the truncation.")
     expect(len(first.get("body") or "") == 25, "Le body doit etre tronque au seuil configure.")
     expect("reactions" not in first and "repository_url" not in first, "Les champs GitHub bruyants ne doivent pas etre copies.")
 
@@ -254,8 +254,8 @@ def test_closed_filter_and_payload_shapes() -> None:
     expect(len(direct_wrappers) == 2, "Un tableau direct d'issues doit etre accepte.")
 
     invalid = block.execute_runtime(unit_context(config={}, input_payload="not json"))
-    expect(invalid.status == "failed", "Une entree non JSON doit echouer proprement.")
-    expect("not valid JSON" in invalid.error, "L'erreur doit expliquer le JSON invalide.")
+    expect(invalid.status == "failed", "A non-JSON input must fail cleanly.")
+    expect("not valid JSON" in invalid.error, "The error must explain the invalid JSON.")
 
 
 def sample_label_filter_response() -> list[dict[str, Any]]:
@@ -293,28 +293,28 @@ def test_label_filters() -> None:
     payload = sample_label_filter_response()
 
     unfiltered = block.execute_runtime(unit_context(config={}, input_payload=payload))
-    expect(issue_numbers(unfiltered) == [1, 2, 3, 4], "Sans filtre, toutes les issues doivent etre conservees.")
-    expect("4 issue(s) recue(s)" in unfiltered.outputs[1].value, "Le summary doit compter les issues recues.")
-    expect("4 issue(s) conservee(s)" in unfiltered.outputs[1].value, "Le summary doit compter les issues conservees sans filtre.")
+    expect(issue_numbers(unfiltered) == [1, 2, 3, 4], "With no filter, every issue must be kept.")
+    expect("4 issue(s) recue(s)" in unfiltered.outputs[1].value, "The summary must count the received issues.")
+    expect("4 issue(s) conservee(s)" in unfiltered.outputs[1].value, "The summary must count the issues kept with no filter.")
 
     required = block.execute_runtime(unit_context(config={"required_labels": ["todo"]}, input_payload=payload))
     expect(issue_numbers(required) == [1, 2, 4], "required_labels doit garder les issues avec le label requis, sans tenir compte de la casse.")
-    expect("1 exclue(s) par absence de label requis" in required.outputs[1].value, "Le summary doit compter les labels requis manquants.")
+    expect("1 excluded for a missing required label" in required.outputs[1].value, "The summary must count the missing required labels.")
 
     excluded = block.execute_runtime(unit_context(config={"excluded_labels": ["status:done"]}, input_payload=payload))
-    expect(issue_numbers(excluded) == [1, 3], "excluded_labels doit exclure les issues qui portent un label interdit.")
-    expect("2 exclue(s) par label interdit" in excluded.outputs[1].value, "Le summary doit compter les labels interdits.")
+    expect(issue_numbers(excluded) == [1, 3], "excluded_labels must drop the issues carrying an excluded label.")
+    expect("2 excluded by an excluded label" in excluded.outputs[1].value, "The summary must count the excluded labels.")
 
     combined = block.execute_runtime(
         unit_context(config={"required_labels": ["todo"], "excluded_labels": ["status:done"]}, input_payload=payload)
     )
-    expect(issue_numbers(combined) == [1], "excluded_labels doit gagner sur required_labels quand les deux matchent.")
-    expect("1 exclue(s) par absence de label requis" in combined.outputs[1].value, "Le filtre requis doit compter les issues sans todo.")
-    expect("2 exclue(s) par label interdit" in combined.outputs[1].value, "Le filtre interdit doit compter les issues exclues en priorite.")
+    expect(issue_numbers(combined) == [1], "excluded_labels must win over required_labels when both match.")
+    expect("1 excluded for a missing required label" in combined.outputs[1].value, "The required filter must count the issues without todo.")
+    expect("2 excluded by an excluded label" in combined.outputs[1].value, "The exclusion filter must count the issues it drops first.")
 
     text_config = GitHubIssuesToListBlock().normalize_config({"required_labels": "todo, component:ui", "excluded_labels": "status:done"})
-    expect(text_config["required_labels"] == ["todo", "component:ui"], "Les filtres texte separes par virgule doivent etre normalises.")
-    expect(text_config["excluded_labels"] == ["status:done"], "Les filtres texte exclus doivent etre normalises.")
+    expect(text_config["required_labels"] == ["todo", "component:ui"], "Comma separated text filters must be normalized.")
+    expect(text_config["excluded_labels"] == ["status:done"], "Excluded text filters must be normalized.")
 
 
 def test_wildcard_label_filters() -> None:
@@ -324,27 +324,27 @@ def test_wildcard_label_filters() -> None:
     payload = sample_wildcard_label_response()
 
     excluded_closed = block.execute_runtime(unit_context(config={"excluded_labels": ["closed:*"]}, input_payload=payload))
-    expect(issue_numbers(excluded_closed) == [11, 12], "excluded_labels doit accepter un wildcard comme closed:*.")
-    expect("2 exclue(s) par label interdit" in excluded_closed.outputs[1].value, "Le summary doit compter les exclusions wildcard.")
+    expect(issue_numbers(excluded_closed) == [11, 12], "excluded_labels must accept a wildcard such as closed:*.")
+    expect("2 excluded by an excluded label" in excluded_closed.outputs[1].value, "The summary must count the wildcard exclusions.")
 
     required_status = block.execute_runtime(unit_context(config={"required_labels": ["status:*"]}, input_payload=payload))
-    expect(issue_numbers(required_status) == [11, 13], "required_labels doit accepter un wildcard comme status:*.")
-    expect("2 exclue(s) par absence de label requis" in required_status.outputs[1].value, "Le summary doit compter les absences de wildcard requis.")
+    expect(issue_numbers(required_status) == [11, 13], "required_labels must accept a wildcard such as status:*.")
+    expect("2 excluded for a missing required label" in required_status.outputs[1].value, "The summary must count the missing required wildcards.")
 
     required_and_excluded = block.execute_runtime(
         unit_context(config={"required_labels": ["status:*"], "excluded_labels": ["closed:*"]}, input_payload=payload)
     )
-    expect(issue_numbers(required_and_excluded) == [11], "excluded_labels wildcard doit rester prioritaire sur required_labels wildcard.")
-    expect("1 exclue(s) par absence de label requis" in required_and_excluded.outputs[1].value, "Le required wildcard doit compter les issues non exclues sans status:*.")
-    expect("2 exclue(s) par label interdit" in required_and_excluded.outputs[1].value, "L'exclusion wildcard doit etre appliquee avant le required.")
+    expect(issue_numbers(required_and_excluded) == [11], "A wildcard excluded_labels must stay ahead of a wildcard required_labels.")
+    expect("1 excluded for a missing required label" in required_and_excluded.outputs[1].value, "The required wildcard must count the kept issues without status:*.")
+    expect("2 excluded by an excluded label" in required_and_excluded.outputs[1].value, "The wildcard exclusion must be applied before the required one.")
 
     exact_and_wildcard = block.execute_runtime(
         unit_context(config={"required_labels": ["status:*", "area:blocs"]}, input_payload=payload)
     )
-    expect(issue_numbers(exact_and_wildcard) == [11], "Tous les filtres requis exacts et wildcard doivent matcher.")
+    expect(issue_numbers(exact_and_wildcard) == [11], "Every exact and wildcard required filter must match.")
 
     literal_question_mark = block.execute_runtime(unit_context(config={"required_labels": ["status:?"]}, input_payload=payload))
-    expect(issue_numbers(literal_question_mark) == [], "Sans *, les filtres restent des labels exacts et ? n'est pas un wildcard.")
+    expect(issue_numbers(literal_question_mark) == [], "Without *, filters stay exact labels and ? is not a wildcard.")
 
 
 def test_ui_contract() -> None:
@@ -359,9 +359,9 @@ def test_ui_contract() -> None:
     expect('data-node-kind="github_issues_to_list"' in html, "Le modal doit venir du bloc.")
     expect("cw-github-issues-to-list-modal" in html, "Le modal doit utiliser le layout large du bloc.")
     expect('data-block-runtime-refresh="autonomous"' in html, "Le modal doit gerer son refresh runtime.")
-    expect('data-github-issues-to-list-tab-id="transform"' in html, "Le modal doit exposer l'onglet Transformation.")
-    expect('data-github-issues-to-list-tab-id="preview"' in html, "Le modal doit exposer l'onglet Preview.")
-    expect('data-github-issues-to-list-tab-id="status"' in html, "Le modal doit exposer l'onglet Ports & etat.")
+    expect('data-github-issues-to-list-tab-id="transform"' in html, "The modal must expose the Transformation tab.")
+    expect('data-github-issues-to-list-tab-id="preview"' in html, "The modal must expose the Preview tab.")
+    expect('data-github-issues-to-list-tab-id="status"' in html, "The modal must expose the Ports & etat tab.")
     expect('{&quot;item&quot;:' in html or '{"item":' in html, "Le modal doit montrer le format wrapper item.")
     expect('data-block-config-field="required_labels"' in html, "Le modal doit exposer required_labels.")
     expect('data-block-config-field="excluded_labels"' in html, "Le modal doit exposer excluded_labels.")
@@ -370,14 +370,14 @@ def test_ui_contract() -> None:
 
     inspector = render_block_inspector_panel("github_issues_to_list", {"node": node})
     inspector_html = str(inspector.get("html") or "")
-    expect("cw-github-issues-to-list-inspector" in inspector_html, "L'inspector doit venir du bloc.")
-    expect("GitHub Issues to List" in inspector_html and "Transform" in inspector_html, "La metadata inspector doit etre renseignee.")
-    expect('class="field-grid"' not in inspector_html, "L'inspector doit afficher un attribut par ligne.")
-    expect('data-block-config-field="include_body"' in inspector_html, "include_body doit etre editable.")
-    expect('data-block-config-field="max_body_chars"' in inspector_html, "max_body_chars doit etre editable.")
-    expect('data-block-config-field="include_closed"' in inspector_html, "include_closed doit etre editable.")
-    expect('data-block-config-field="required_labels"' in inspector_html, "required_labels doit etre editable.")
-    expect('data-block-config-field="excluded_labels"' in inspector_html, "excluded_labels doit etre editable.")
+    expect("cw-github-issues-to-list-inspector" in inspector_html, "The inspector must come from the block.")
+    expect("GitHub Issues to List" in inspector_html and "Transform" in inspector_html, "The inspector metadata must be filled in.")
+    expect('class="field-grid"' not in inspector_html, "The inspector must show one attribute per line.")
+    expect('data-block-config-field="include_body"' in inspector_html, "include_body must be editable.")
+    expect('data-block-config-field="max_body_chars"' in inspector_html, "max_body_chars must be editable.")
+    expect('data-block-config-field="include_closed"' in inspector_html, "include_closed must be editable.")
+    expect('data-block-config-field="required_labels"' in inspector_html, "required_labels must be editable.")
+    expect('data-block-config-field="excluded_labels"' in inspector_html, "excluded_labels must be editable.")
 
     card = render_block_node_card("github_issues_to_list", {"node": node})
     card_html = str(card.get("html") or "")
@@ -388,7 +388,7 @@ def run_runtime_case(runtime_mode: str) -> None:
     """TC4 - Run the block through the public run API in one runtime mode."""
 
     with isolated_server() as server:
-        # Les surfaces sont des assets de release : le bundled kind n'en sert aucun.
+        # Surfaces are release assets: a bundled kind serves none of them.
         model = install_test_package(server, "github_issues_to_list")
         key = quote(release_key(model), safe="")
         served = lambda payload, suffix: next(
@@ -399,15 +399,15 @@ def run_runtime_case(runtime_mode: str) -> None:
     logs = "\n".join(run.get("logs", []))
     raw_output = run.get("output_values", {}).get("github-issues-to-list-1:1", {}).get("value") or "[]"
     wrappers = json.loads(raw_output)
-    expect(run.get("status") == "success", f"Le run {runtime_mode} doit reussir.")
-    expect(len(wrappers) == 1, "Le run doit filtrer l'issue fermee et publier une issue.")
-    expect(wrappers[0]["item"]["number"] == 1, "La sortie runtime doit contenir l'issue compacte.")
-    expect(wrappers[0]["item"]["body_truncated"] is True, "La sortie runtime doit appliquer la troncature.")
-    expect("fallback centralized" not in logs, "Le run actif ne doit pas fallback centralise.")
+    expect(run.get("status") == "success", f"The {runtime_mode} run must succeed.")
+    expect(len(wrappers) == 1, "The run must filter out the closed issue and publish one issue.")
+    expect(wrappers[0]["item"]["number"] == 1, "The runtime output must contain the compacted issue.")
+    expect(wrappers[0]["item"]["body_truncated"] is True, "The runtime output must apply the truncation.")
+    expect("fallback centralized" not in logs, "The active run must not fall back to the centralized engine.")
     if runtime_mode == "zeromq_active":
         expect(
             run.get("results", {}).get("github-issues-to-list-1", {}).get("transport") == "zeromq_active",
-            "github_issues_to_list doit etre execute via zeromq_active.",
+            "github_issues_to_list must run through zeromq_active.",
         )
 
 
