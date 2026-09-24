@@ -1,3 +1,5 @@
+import { withProperties } from "./properties.js";
+
 /**
  * Role: Mounts the GitHub Issues to List block modal frontend.
  * File Name: block_modal.js
@@ -5,7 +7,6 @@
  * Email: alex@hackinvent.com
  * Created Date: 2026-05-25
  */
-const previous = registry.github_issues_to_list || {};
 
 /**
  * Return block modal tabs in DOM order.
@@ -80,8 +81,7 @@ function moveTab(root, current, direction) {
  * @param {object} context - Render context returned by block.py.
  * @returns {void}
  */
-export function mount(root, api, context) {
-  previous.mount?.(root, api, context);
+function mountOwned(root, api, context) {
   const selected = root.querySelector('[data-github-issues-to-list-modal-tab][aria-selected="true"]')
     || root.querySelector("[data-github-issues-to-list-modal-tab]");
   activateTab(root, selected);
@@ -115,4 +115,9 @@ export function mount(root, api, context) {
       activateTab(root, tabs[tabs.length - 1], { focus: true });
     }
   });
+}
+
+/** Keep the block behavior and add properties-only accessibility. */
+export function mount(root, ...args) {
+  return withProperties(mountOwned).call(this, root, ...args);
 }
