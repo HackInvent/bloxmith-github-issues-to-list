@@ -10,9 +10,6 @@ Verified BloxSmith versions: **1.0.9** (bundled-block tests; see [test evidence]
 
 [![ISSUES LIST — Filters and reshapes GitHub issues into a compact local list.](media/thumbnail.webp)](media/cover.png)
 
-*Concept illustration. [Artwork and generation prompt](media/README.md).*
-
-
 `github_issues_to_list` transforms a raw GitHub Issues JSON response into a compact list that can be consumed by `iterator` or downstream AI blocks.
 
 ## Purpose
