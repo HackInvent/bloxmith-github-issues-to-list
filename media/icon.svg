@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
+     fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+     stroke-linejoin="round" role="img" aria-label="GitHub Issues to List">
+  <title>GitHub Issues to List</title>
+  <circle cx="6.6" cy="12" r="3.4"/>
+  <circle cx="6.6" cy="12" r="1.1" fill="currentColor" stroke="none"/>
+  <path d="M11.4 12h2.6"/>
+  <path d="m12.8 10.4 1.8 1.6-1.8 1.6"/>
+  <path d="M16.8 8.4h4.6M16.8 12h4.6M16.8 15.6h3"/>
+</svg>
